@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { mockDrivers, mockOrders } from "@/mocks";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -242,9 +243,12 @@ export default function LiveMapPage() {
                 </div>
               )}
 
-              <a href={`/drivers/${selectedDriver.id}`} className="inline-flex items-center justify-center w-full h-9 px-4 text-sm font-medium rounded-[var(--radius-md)] border border-[var(--border)] hover:bg-[var(--muted-bg)] transition-colors mt-4">
+              <Link
+                href={`/drivers/${selectedDriver.id}`}
+                className="inline-flex items-center justify-center w-full h-9 px-4 text-sm font-medium rounded-[var(--radius-md)] border border-[var(--border)] hover:bg-[var(--muted-bg)] transition-colors mt-4"
+              >
                 View Profile
-              </a>
+              </Link>
             </Card>
           </div>
         )}

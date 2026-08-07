@@ -17,9 +17,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [hydrated, setHydrated] = useState(false);
+
   useEffect(() => {
-    if (isAuthenticated) router.replace("/dashboard");
-  }, [isAuthenticated, router]);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated && isAuthenticated) router.replace("/dashboard");
+  }, [hydrated, isAuthenticated, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

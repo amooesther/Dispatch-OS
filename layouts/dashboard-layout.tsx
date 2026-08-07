@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/app-store";
 import { Sidebar } from "./sidebar";
@@ -8,19 +8,42 @@ import { Topbar } from "./topbar";
 import { MobileNav } from "./mobile-nav";
 import { ToastContainer } from "@/components/feedback/toast";
 import { CommandPalette } from "@/components/command-palette";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils/cn";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, sidebarOpen } = useAppStore();
+  const { isAuthenticated } = useAppStore();
   const router = useRouter();
+  // Wait for Zustand persist to hydrate from localStorage before making auth decisions
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [hydrated, isAuthenticated, router]);
 
-  if (!isAuthenticated) return null;
+  // Show a loading screen until the store has hydrated
+  if (!hydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  // After hydration, if not authenticated redirect is already in-flight
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
