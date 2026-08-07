@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/app-store";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { MobileNav } from "./mobile-nav";
@@ -16,6 +17,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // Wait for Zustand persist to hydrate from localStorage before making auth decisions
   const [hydrated, setHydrated] = useState(false);
+
+  // Real-time notification simulation — runs on every dashboard page
+  useRealtimeNotifications();
 
   useEffect(() => {
     setHydrated(true);

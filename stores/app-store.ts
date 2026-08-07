@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { mockNotifications } from "@/mocks";
+import type { Notification } from "@/types";
 
 interface Toast {
   id: string;
@@ -24,10 +26,13 @@ interface AppState {
   commandPaletteOpen: boolean;
   setCommandPaletteOpen: (open: boolean) => void;
 
-  // Unread notifications count
+  // Notifications (live state shared across the whole app)
+  notifications: Notification[];
   unreadCount: number;
+  addNotification: (n: Notification) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
   setUnreadCount: (count: number) => void;
-  decrementUnread: () => void;
 
   // Toasts
   toasts: Toast[];
@@ -54,9 +59,34 @@ export const useAppStore = create<AppState>()(
       commandPaletteOpen: false,
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
 
-      unreadCount: 3,
+      // Notifications — initialised from mock data
+      notifications: mockNotifications,
+      unreadCount: mockNotifications.filter((n) => !n.read).length,
+
+      addNotification: (n) =>
+        set((s) => ({
+          notifications: [n, ...s.notifications],
+          unreadCount: s.unreadCount + 1,
+        })),
+
+      markNotificationRead: (id) =>
+        set((s) => {
+          const already = s.notifications.find((n) => n.id === id)?.read;
+          return {
+            notifications: s.notifications.map((n) =>
+              n.id === id ? { ...n, read: true } : n
+            ),
+            unreadCount: already ? s.unreadCount : Math.max(0, s.unreadCount - 1),
+          };
+        }),
+
+      markAllNotificationsRead: () =>
+        set((s) => ({
+          notifications: s.notifications.map((n) => ({ ...n, read: true })),
+          unreadCount: 0,
+        })),
+
       setUnreadCount: (count) => set({ unreadCount: count }),
-      decrementUnread: () => set((s) => ({ unreadCount: Math.max(0, s.unreadCount - 1) })),
 
       toasts: [],
       addToast: (toast) => {
@@ -66,7 +96,8 @@ export const useAppStore = create<AppState>()(
           set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
         }, 4000);
       },
-      removeToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+      removeToast: (id) =>
+        set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
       isAuthenticated: false,
       user: null,
@@ -84,6 +115,7 @@ export const useAppStore = create<AppState>()(
         sidebarOpen: state.sidebarOpen,
         isAuthenticated: state.isAuthenticated,
         user: state.user,
+        // Don't persist notifications — regenerate from mock on each session
       }),
     }
   )
