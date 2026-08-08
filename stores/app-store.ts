@@ -31,6 +31,8 @@ interface AppState {
   unreadCount: number;
   addNotification: (n: Notification) => void;
   markNotificationRead: (id: string) => void;
+  markNotificationUnread: (id: string) => void;
+  toggleNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   setUnreadCount: (count: number) => void;
 
@@ -77,6 +79,32 @@ export const useAppStore = create<AppState>()(
               n.id === id ? { ...n, read: true } : n
             ),
             unreadCount: already ? s.unreadCount : Math.max(0, s.unreadCount - 1),
+          };
+        }),
+
+      markNotificationUnread: (id) =>
+        set((s) => {
+          const alreadyUnread = !s.notifications.find((n) => n.id === id)?.read;
+          return {
+            notifications: s.notifications.map((n) =>
+              n.id === id ? { ...n, read: false } : n
+            ),
+            unreadCount: alreadyUnread ? s.unreadCount : s.unreadCount + 1,
+          };
+        }),
+
+      toggleNotificationRead: (id) =>
+        set((s) => {
+          const n = s.notifications.find((x) => x.id === id);
+          if (!n) return s;
+          const wasRead = n.read;
+          return {
+            notifications: s.notifications.map((x) =>
+              x.id === id ? { ...x, read: !x.read } : x
+            ),
+            unreadCount: wasRead
+              ? s.unreadCount + 1          // toggling to unread
+              : Math.max(0, s.unreadCount - 1), // toggling to read
           };
         }),
 
